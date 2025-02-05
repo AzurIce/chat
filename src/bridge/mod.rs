@@ -160,7 +160,10 @@ impl Bridge {
                 result.map_err(anyhow::Error::from)
                     .and_then(|bytes| {
                         let text = String::from_utf8(bytes.to_vec())?;
-                        Ok(text)
+                        match Self::process_stream_data(&text)? {
+                            Some(content) => Ok(content),
+                            None => Ok("".to_string())
+                        }
                     })
             });
 
@@ -191,5 +194,69 @@ impl Bridge {
 
         let chat_response: ChatResponse = response.json().await?;
         Ok(chat_response.choices[0].message.content.clone())
+    }
+
+    fn process_stream_data(text: &str) -> Result<Option<String>> {
+        let chunks = text.split("\n").collect::<Vec<_>>();
+        let mut result = String::new();
+
+        for chunk in chunks.iter() {
+            if chunk.is_empty() {
+                continue;
+            }
+
+            let chunk = chunk.trim_start_matches("data:").trim();
+
+            if let Ok(json_obj) = serde_json::from_str::<serde_json::Value>(chunk) {
+                if let Some(content) = json_obj["choices"][0]["delta"]["content"].as_str() {
+                    result.push_str(content);
+                } else {
+                    return Err(anyhow::anyhow!("Json content error: {}", json_obj));
+                }
+            } else if chunk.contains("DONE") {
+                return Ok(None);
+            } else {
+                return Err(anyhow::anyhow!("Failed to parse json: {}", chunk));
+            }
+        }
+
+        Ok(Some(result))
+    }
+
+    pub async fn chat_with_history_stream(&self, messages: &[Message]) -> Result<impl Stream<Item = Result<String>>> {
+        let request = ChatRequest {
+            model: self.model.clone(),
+            messages: messages.to_vec(),
+            stream: true,
+            max_tokens: self.max_tokens,
+            temperature: self.temperature,
+            top_p: self.top_p,
+            top_k: self.top_k,
+            frequency_penalty: self.frequency_penalty,
+            n: Some(1),
+        };
+
+        let response = self.client
+            .post(&self.api_base)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Content-Type", "application/json")
+            .json(&request)
+            .send()
+            .await?;
+
+        let stream = response
+            .bytes_stream()
+            .map(|result| {
+                result.map_err(anyhow::Error::from)
+                    .and_then(|bytes| {
+                        let text = String::from_utf8(bytes.to_vec())?;
+                        match Self::process_stream_data(&text)? {
+                            Some(content) => Ok(content),
+                            None => Ok("".to_string())
+                        }
+                    })
+            });
+
+        Ok(stream)
     }
 } 

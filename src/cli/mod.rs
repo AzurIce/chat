@@ -77,8 +77,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         None => {
             if let Some(message) = cli.message {
                 println!("Message: {}", message);
-                let response = core.chat(&message).await?;
-                println!("Response: {}", response);
+                println!("Response: ");
+                let _response = core.chat_stream(&message).await?;
             } else {
                 println!("No message provided. Use 'chat --help' for usage information.");
             }

@@ -1,6 +1,8 @@
 use crate::bridge::{Bridge, Message};
 use crate::config::Config;
 use anyhow::Result;
+use futures::StreamExt;
+use std::io::{self, Write};
 
 pub struct Core {
     bridge: Bridge,
@@ -43,6 +45,48 @@ impl Core {
         self.config.add_history(message.to_string(), response.clone());
         
         Ok(response)
+    }
+
+    pub async fn chat_stream(&mut self, message: &str) -> Result<String> {
+        let mut messages = Vec::new();
+        for item in self.config.get_history() {
+            messages.push(Message {
+                role: "user".to_string(),
+                content: item.question.clone(),
+            });
+            messages.push(Message {
+                role: "assistant".to_string(),
+                content: item.answer.clone(),
+            });
+        }
+        messages.push(Message {
+            role: "user".to_string(),
+            content: message.to_string(),
+        });
+
+        let mut stream = self.bridge.chat_with_history_stream(&messages).await?;
+        let mut full_response = String::new();
+        
+        while let Some(chunk) = stream.next().await {
+            match chunk {
+                Ok(text) => {
+                    if !text.is_empty() {
+                        print!("{}", text);
+                        io::stdout().flush()?;
+                        full_response.push_str(&text);
+                    }
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+        }
+        println!();
+
+        // 保存对话历史
+        self.config.add_history(message.to_string(), full_response.clone());
+        
+        Ok(full_response)
     }
 
     pub fn clear_history(&mut self) -> Result<()> {
