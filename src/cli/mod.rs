@@ -10,8 +10,8 @@ struct Cli {
     command: Option<Commands>,
 
     /// Message to send (when no subcommand is provided)
-    #[arg(name = "MESSAGE")]
-    message: Option<String>,
+    #[arg(trailing_var_arg = true)]
+    message: Vec<String>,
 }
 
 #[derive(Subcommand)]
@@ -143,9 +143,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
         None => {
-            if let Some(message) = cli.message {
-                // println!("Message: {}", message);
-                // println!("Response: ");
+            if !cli.message.is_empty() {
+                let message = cli.message.join(" ");
                 let _response = core.chat_stream(&message).await?;
             } else {
                 println!("No message provided. Use 'chat --help' for usage information.");
