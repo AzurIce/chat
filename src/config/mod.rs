@@ -13,6 +13,8 @@ pub struct Config {
     pub max_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
+    #[serde(default = "default_max_history")]
+    pub max_history: usize,
     #[serde(default)]
     pub history: VecDeque<HistoryItem>,
 }
@@ -23,6 +25,10 @@ pub struct HistoryItem {
     pub answer: String,
 }
 
+fn default_max_history() -> usize {
+    10
+}
+
 impl Default for Config {
     fn default() -> Self {
         Self {
@@ -31,6 +37,7 @@ impl Default for Config {
             model: "deepseek-ai/DeepSeek-V3".to_string(),
             max_tokens: None,
             temperature: None,
+            max_history: default_max_history(),
             history: VecDeque::new(),
         }
     }
@@ -75,8 +82,7 @@ impl Config {
     }
 
     pub fn add_history(&mut self, question: String, answer: String) {
-        const MAX_HISTORY: usize = 10;
-        if self.history.len() >= MAX_HISTORY {
+        if self.history.len() >= self.max_history {
             self.history.pop_front();
         }
         self.history.push_back(HistoryItem { question, answer });
