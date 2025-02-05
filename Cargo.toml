@@ -1,6 +1,16 @@
 [package]
-name = "Chat"
+name = "chat"
 version = "0.1.0"
 edition = "2021"
+default-run = "chat"
+
+[[bin]]
+name = "chat"
+path = "src/main.rs"
+
+[lib]
+name = "chat"
+path = "src/lib.rs"
 
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
