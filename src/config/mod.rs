@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::{Result, Context};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
     pub api_base: String,
     pub token: String,
@@ -18,7 +18,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             api_base: "https://api.siliconflow.cn/v1/chat/completions".to_string(),
-            token: "sk-wtdfnppnpnujbjxekmttfluckctmtttjktkspqfgbqyrqtpb".to_string(),
+            token: "sk-default-token".to_string(),
             model: "deepseek-ai/DeepSeek-V3".to_string(),
             max_tokens: None,
             temperature: None,
