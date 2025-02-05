@@ -69,6 +69,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
                             "model" => println!("model: {}", config.model),
                             "max_tokens" => println!("max_tokens: {:?}", config.max_tokens),
                             "temperature" => println!("temperature: {:?}", config.temperature),
+                            "max_history" => println!("max_history: {}", config.max_history),
                             _ => println!("Unknown configuration key: {}", key),
                         },
                         None => {
@@ -78,6 +79,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
                             println!("  model: {}", config.model);
                             println!("  max_tokens: {:?}", config.max_tokens);
                             println!("  temperature: {:?}", config.temperature);
+                            println!("  max_history: {}", config.max_history);
                         }
                     }
                 }
@@ -100,6 +102,9 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
                             } else {
                                 Some(value.parse().context("Invalid temperature value")?)
                             }
+                        }
+                        "max_history" => {
+                            new_config.max_history = value.parse().context("Invalid max_history value")?;
                         }
                         _ => {
                             println!("Unknown configuration key: {}", key);
