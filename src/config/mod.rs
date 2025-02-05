@@ -2,6 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use anyhow::{Result, Context};
 use serde::{Deserialize, Serialize};
+use std::collections::VecDeque;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
@@ -12,6 +13,14 @@ pub struct Config {
     pub max_tokens: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub temperature: Option<f32>,
+    #[serde(default)]
+    pub history: VecDeque<HistoryItem>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HistoryItem {
+    pub question: String,
+    pub answer: String,
 }
 
 impl Default for Config {
@@ -22,6 +31,7 @@ impl Default for Config {
             model: "deepseek-ai/DeepSeek-V3".to_string(),
             max_tokens: None,
             temperature: None,
+            history: VecDeque::new(),
         }
     }
 }
@@ -62,6 +72,25 @@ impl Config {
            .context("Failed to write config file")?;
        
        Ok(())
+    }
+
+    pub fn add_history(&mut self, question: String, answer: String) {
+        const MAX_HISTORY: usize = 10;
+        if self.history.len() >= MAX_HISTORY {
+            self.history.pop_front();
+        }
+        self.history.push_back(HistoryItem { question, answer });
+        // 每次添加历史后自动保存
+        self.save().expect("Failed to save history");
+    }
+
+    pub fn clear_history(&mut self) -> Result<()> {
+        self.history.clear();
+        self.save()
+    }
+
+    pub fn get_history(&self) -> &VecDeque<HistoryItem> {
+        &self.history
     }
 }
 

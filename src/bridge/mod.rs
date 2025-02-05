@@ -8,7 +8,7 @@ use anyhow::Result;
 use futures::Stream;
 use futures::StreamExt;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Message {
     pub role: String,
     pub content: String,
@@ -165,5 +165,31 @@ impl Bridge {
             });
 
         Ok(stream)
+    }
+
+    // 新增：支持带历史记录的对话方法
+    pub async fn chat_with_history(&self, messages: &[Message]) -> Result<String> {
+        let request = ChatRequest {
+            model: self.model.clone(),
+            messages: messages.to_vec(),
+            stream: false,
+            max_tokens: self.max_tokens,
+            temperature: self.temperature,
+            top_p: self.top_p,
+            top_k: self.top_k,
+            frequency_penalty: self.frequency_penalty,
+            n: Some(1),
+        };
+
+        let response = self.client
+            .post(&self.api_base)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Content-Type", "application/json")
+            .json(&request)
+            .send()
+            .await?;
+
+        let chat_response: ChatResponse = response.json().await?;
+        Ok(chat_response.choices[0].message.content.clone())
     }
 } 
