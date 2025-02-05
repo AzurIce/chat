@@ -17,7 +17,7 @@ chat 帮我写一段求解斐波那契数列的代码，rust语言
 chat Write a code to solve the Fibonacci sequence, rust language
 ```
 
-## Config
+### Config
 
 ```bash
 chat config get
@@ -27,7 +27,7 @@ chat config get max_history
 chat config set max_history 10
 ```
 
-## History
+### History
 
 ```bash
 chat history get
