@@ -210,6 +210,8 @@ impl Bridge {
             if let Ok(json_obj) = serde_json::from_str::<serde_json::Value>(chunk) {
                 if let Some(content) = json_obj["choices"][0]["delta"]["content"].as_str() {
                     result.push_str(content);
+                } else if let Some(content) = json_obj["choices"][0]["delta"]["reasoning_content"].as_str() {
+                    result.push_str(content);
                 } else {
                     return Err(anyhow::anyhow!("Json content error: {}", json_obj));
                 }
