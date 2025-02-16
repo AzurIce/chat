@@ -1,5 +1,5 @@
 {
-  description = "Build a cargo project without extra checks";
+  description = "A simple command line tool enables you to interact with LLMs.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
