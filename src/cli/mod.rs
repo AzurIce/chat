@@ -145,6 +145,7 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         None => {
             if !cli.message.is_empty() {
                 let message = cli.message.join(" ");
+                println!("");
                 let _response = core.chat_stream(&message).await?;
             } else {
                 println!("No message provided. Use 'chat --help' for usage information.");

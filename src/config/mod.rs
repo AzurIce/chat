@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 use std::path::PathBuf;
 use anyhow::{Result, Context};
 use serde::{Deserialize, Serialize};
@@ -101,11 +101,13 @@ impl Config {
 }
 
 fn get_config_path() -> Result<PathBuf> {
+    // user config dir
     // let config_dir = dirs::config_dir()
     //     .context("Failed to get config directory")?;
     // Ok(config_dir.join("chat").join("config.toml"))
-    let config_path = std::env::current_dir()
-        .context("Failed to get current directory")?
+
+    // project root dir
+    let config_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("config.toml");
-    Ok(config_path)
+    Ok(config_dir)
 } 
