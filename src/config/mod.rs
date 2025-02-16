@@ -104,5 +104,8 @@ fn get_config_path() -> Result<PathBuf> {
     // let config_dir = dirs::config_dir()
     //     .context("Failed to get config directory")?;
     // Ok(config_dir.join("chat").join("config.toml"))
-    Ok("./config.toml".into())
+    let config_path = std::env::current_dir()
+        .context("Failed to get current directory")?
+        .join("config.toml");
+    Ok(config_path)
 } 
