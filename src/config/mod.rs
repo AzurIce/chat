@@ -101,7 +101,8 @@ impl Config {
 }
 
 fn get_config_path() -> Result<PathBuf> {
-    let config_dir = dirs::config_dir()
-        .context("Failed to get config directory")?;
-    Ok(config_dir.join("chat").join("config.toml"))
+    // let config_dir = dirs::config_dir()
+    //     .context("Failed to get config directory")?;
+    // Ok(config_dir.join("chat").join("config.toml"))
+    Ok("./config.toml".into())
 } 
